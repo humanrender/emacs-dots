@@ -59,7 +59,14 @@ Bind keys. The leader key is defined as dots-key in the configuration.
     ("C-x C-f" . counsel-find-file))
 #+END_SRC
 
-Remap <menu> key to dots-key in Linux machines. For mac, install Karabiner elements and add this code snippet to ~/.config/karabiner/karabiner.json in "complex_modifications" rules.
+Remap <menu> key to dots-key in Linux machines.
+
+#+BEGIN_SRC emacs-lisp
+(when (string= system-type "darwin")
+    (define-key key-translation-map (kbd "<menu>") (kbd "M-m")))
+#+END_SRC
+
+For mac, install Karabiner elements and add this code snippet to ~/.config/karabiner/karabiner.json in "complex_modifications" rules.
 
 #+BEGIN_SRC json
   {
@@ -79,11 +86,6 @@ Remap <menu> key to dots-key in Linux machines. For mac, install Karabiner eleme
         }
       ]
   }
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-(when (string= system-type "darwin")
-    (define-key key-translation-map (kbd "<menu>") (kbd "M-m")))
 #+END_SRC
 
 Delete selection when writing text
