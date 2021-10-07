@@ -1,0 +1,299 @@
+** Config
+
+Set the general theme config variables
+
+#+BEGIN_SRC emacs-lisp
+(setq-default
+  ;; Prefix for this configuration commands
+  dots-key "M-m"
+  ;; Emacs Theme
+  ;; Available themes: spacemacs-dark and spacemacs-light
+  dots-theme 'spacemacs-dark
+  ;; Tab size
+  dots-tabsize 2
+  ;; Startup screen. Can be nil or a path
+  dots-startup-screen "~/Documents/org/todo.org"
+)
+#+END_SRC
+
+** General
+
+Change where emacs sets custom-set variables.
+
+This prevents the warning when starting up emacs with custom fonts.
+
+#+BEGIN_SRC emacs-lisp
+(setq custom-file (concat user-emacs-directory "custom.el"))
+(load custom-file)
+#+END_SRC
+
+Bind keys. The leader key is defined as dots-key in the configuration.
+
+#+BEGIN_SRC emacs-lisp
+  ;; dots keys
+
+  (bind-keys
+    :prefix-map .dots
+    :prefix dots-key
+      ("/" . counsel-projectile-ag)
+    :prefix-map .magit
+    :prefix (concat dots-key " g")
+      ("s" . magit-status)
+    :prefix-map .project
+    :prefix (concat dots-key " p")
+      ("d" . counsel-projectile-find-dir)
+      ("f" . counsel-projectile-find-file)
+      ("s" . counsel-projectile-switch-project)
+    :prefix-map .org
+    :prefix (concat dots-key " o")
+      ("c" . org-capture)
+    :prefix-map .buffers
+    :prefix (concat dots-key " b")
+      ("r" . revert-buffer))
+
+  ;; Common keys
+
+  (bind-keys*
+    ("C-s" . swiper)
+    ("M-x" . counsel-M-x)
+    ("C-x C-f" . counsel-find-file))
+#+END_SRC
+
+Remap <menu> key to dots-key in Linux machines. For mac, install Karabiner elements and add this code snippet to ~/.config/karabiner/karabiner.json in "complex_modifications" rules.
+
+#+BEGIN_SRC json
+  {
+    "description": "emacs remap menu to M-m",
+      "manipulators": [
+        {
+          "from": {
+            "key_code": "application"
+          },
+          "to": [
+            {
+              "key_code": "m",
+              "modifiers": ["left_option"]
+            }
+          ],
+          "type": "basic"
+        }
+      ]
+  }
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(when (string= system-type "darwin")
+    (define-key key-translation-map (kbd "<menu>") (kbd "M-m")))
+#+END_SRC
+
+Delete selection when writing text
+
+#+BEGIN_SRC emacs-lisp
+(delete-selection-mode 1)
+#+END_SRC
+
+Use spaces instead of tabs
+
+#+BEGIN_SRC emacs-lisp
+(setq-default indent-tabs-mode nil)
+#+END_SRC
+
+Set general tab width
+
+#+BEGIN_SRC emacs-lisp
+(setq-default tab-width dots-tabsize)
+#+END_SRC
+
+Use better-defaults package
+
+#+BEGIN_SRC emacs-lisp
+(use-package better-defaults)
+#+END_SRC
+
+Remove split startup screen
+
+#+BEGIN_SRC emacs-lisp
+(setq inhibit-startup-screen t)
+(setq initial-buffer-choice dots-startup-screen)
+#+END_SRC
+
+Starts emacs in full window
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+#+END_SRC
+
+Move all backups and autosave files to an unique directory and disable lock files
+
+#+BEGIN_SRC emacs-lisp
+(setq backup-directory-alist `(("." . "~/.emacs.d/backups/")))
+(setq auto-save-file-name-transforms `((".*" ,"~/.emacs.d/backups/" t)))
+(setq create-lockfiles nil)
+#+END_SRC
+
+When using in Mac OSX
+
+#+BEGIN_SRC emacs-lisp
+(when (string= system-type "darwin")
+  ;; dired in macOS
+  (setq dired-use-ls-dired nil)
+  ;; No bell!
+  (setq visible-bell nil)
+  (setq ring-bell-function 'ignore))
+#+END_SRC
+
+** UI
+
+Install spacemacs theme
+
+#+BEGIN_SRC emacs-lisp
+(use-package spacemacs-theme
+  :defer t
+  :init (load-theme dots-theme t))
+#+END_SRC
+
+Enable sidebar line numbers
+
+#+BEGIN_SRC emacs-lisp
+(global-linum-mode t)
+#+END_SRC
+
+Font size and family
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'default-frame-alist '(font . "Inconsolata-20:spacing=100" )) 
+#+END_SRC
+
+Enable smart-mode-line
+
+#+BEGIN_SRC emacs-lisp
+(use-package smart-mode-line
+  :ensure t
+  :config
+  (setq sml/theme 'dark)
+  (sml/setup))
+#+END_SRC
+
+** Packages
+
+*** Git
+
+Install [[https://magit.vc/manual/][magit]] to manage git repositories.
+
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+  :config
+  (setq magit-save-repository-buffers nil))
+#+END_SRC
+
+*** Emacs
+
+We use counsel as a completion tools for emacs.
+
+#+BEGIN_SRC emacs-lisp
+(use-package counsel)
+#+END_SRC
+
+which-key help us remeber the bindings
+
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+  :config
+  (which-key-mode))
+#+END_SRC
+
+Install MoveText module with the default bindings:
+
+- *M-Up* - Move text up
+- *M-Down* - Move text down
+
+#+BEGIN_SRC emacs-lisp
+(use-package move-text
+  :config
+  (move-text-default-bindings))
+#+END_SRC
+
+*** Project management
+
+We use counsel-projectile which has a better integration with ivy
+
+#+BEGIN_SRC emacs-lisp
+(use-package counsel-projectile
+  :config
+  (counsel-projectile-mode))
+#+END_SRC
+
+Use the package.json or .git directory as the project root
+
+#+BEGIN_SRC emacs-lisp
+(setq projectile-project-root-files '("package.json" ".git"))
+(setq projectile-project-root-files-bottom-up '(".git"))
+#+END_SRC
+
+*** Autocomplete
+
+Autocomplete with company
+
+#+BEGIN_SRC emacs-lisp
+(use-package company
+  :ensure t
+  :config
+  (global-company-mode))
+#+END_SRC
+
+*** Syntax checking
+
+On the fly syntax check with flycheck
+
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+#+END_SRC
+
+** Languages
+
+Major mode for JSON editing
+
+#+BEGIN_SRC emacs-lisp
+(use-package json-mode
+	:config
+	(setq js-indent-level tab-width))
+#+END_SRC
+
+** Org
+
+Org mode is for keeping notes, maintaining TODO lists, planning projects, and authoring documents with a fast and effective plain-text system.
+
+Improve bullet appearance in org mode
+
+#+BEGIN_SRC emacs-lisp
+(use-package org-bullets
+  :ensure t
+  :after (org)
+  :hook (org-mode . (lambda () (org-bullets-mode 1)))
+  :config
+  (setq org-bullets-bullet-list '(;;; Large
+    "◉"
+    "○"
+    "●"
+    "◎"
+    "◈"
+    "◇"
+    "◆"
+    ))
+  :bind (
+    ("C-c c" . org-capture)
+  )
+)
+#+END_SRC
+
+Sticky headers
+
+#+BEGIN_SRC emacs-lisp
+(use-package org-sticky-header
+  :ensure t
+  :after (org)
+  :hook (org-mode . org-sticky-header-mode)
+  )
+#+END_SRC

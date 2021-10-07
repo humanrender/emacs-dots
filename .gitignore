@@ -1,0 +1,10 @@
+auto-save-list/
+backups/
+elpa/
+transient/
+history
+places
+network-security.data
+config.el
+custom.el
+projectile-bookmarks.eld
